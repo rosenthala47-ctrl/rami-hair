@@ -90,6 +90,7 @@ export default function ProductActions({
     }
 
     router.replace(pathname + "?" + params.toString())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVariant, isValidVariant])
 
   // check if the selected variant is in stock
