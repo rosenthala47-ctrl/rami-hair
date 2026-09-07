@@ -10,10 +10,10 @@
 
 | מסמך | תוכן |
 |---|---|
-| [`docs/architecture.md`](docs/architecture.md) | ארכיטקטורת 5 סוכני ה-AI, שכבת התזמור (n8n + Claude API), Approval Hub, והמלצת פלטפורמת המסחר (Shopify) |
+| [`docs/architecture.md`](docs/architecture.md) | ארכיטקטורת 5 סוכני ה-AI, שכבת התזמור (n8n + Claude API), Approval Hub, וחנות מותאמת אישית (Next.js + Medusa.js + Stripe) |
 | [`docs/roadmap.md`](docs/roadmap.md) | מפת דרכים ליישום שלב-אחר-שלב, עם סימון ברור של כל נקודת התערבות אנושית נדרשת |
 | [`docs/marketing-strategy.md`](docs/marketing-strategy.md) | אסטרטגיית שיווק אורגני+ממומן, תבניות פרומפט ליצירת ויזואליה, ודוגמאות Ad Copy |
 
 ## הצעד הראשון
 
-ראו את **Phase 0** ב-[`docs/roadmap.md`](docs/roadmap.md#phase-0--יסודות-לפני-שיש-בכלל-מערכת) — פתיחת חשבונות (Shopify, סליקה, Anthropic API, ספק, n8n) הנדרשת לפני שכל סוכן יכול להתחיל לפעול.
+ראו את **Phase 0** ב-[`docs/roadmap.md`](docs/roadmap.md#phase-0--יסודות-לפני-שיש-בכלל-מערכת) — פתיחת חשבונות (Vercel, Stripe, אירוח Medusa, Anthropic API, ספק, n8n) הנדרשת לפני שכל סוכן יכול להתחיל לפעול.
