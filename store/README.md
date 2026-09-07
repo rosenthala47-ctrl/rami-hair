@@ -63,82 +63,60 @@ The fastest way to get started is deploying with [Medusa Cloud](https://cloud.me
 
 ### Local Installation
 
-> **Prerequisites:
+> **Prerequisites:**
 >
 > - [Node.js](https://nodejs.org/) v20+
-> - [PostgreSQL](https://www.postgresql.org/) v15+
-> - [pnpm](https://pnpm.io/) v10+
+> - [PostgreSQL](https://www.postgresql.org/) v16+
+> - [Redis](https://redis.io/)
+> - **npm** — this project was scaffolded with `create-medusa-app --use-npm`. The root `package.json` / `package-lock.json` are authoritative; don't introduce a pnpm or yarn lockfile alongside them.
 
-1. Clone the repository and install dependencies:
-
-```bash
-git clone https://github.com/medusajs/dtc-starter.git
-cd dtc-starter
-pnpm install
-```
-
-2. Set up environment variables for the backend:
+This project is already installed and running in the current dev environment: local Postgres (`medusa_dev` database) and Redis, dependencies installed, migrations run, demo data seeded, and an admin user created (see below). To set it up in a fresh environment:
 
 ```bash
+# 1. Start Postgres and Redis
+service postgresql start   # or your platform's equivalent
+redis-server --daemonize yes
+
+# 2. Create the database (once)
+psql -c "CREATE USER medusa WITH PASSWORD 'medusa_dev_pw' CREATEDB;"
+psql -c "CREATE DATABASE medusa_dev OWNER medusa;"
+
+# 3. Install dependencies (from the store/ root)
+npm install
+
+# 4. Configure the backend
 cp apps/backend/.env.template apps/backend/.env
-```
+# then set in apps/backend/.env:
+#   DATABASE_URL=postgres://medusa:medusa_dev_pw@localhost:5432/medusa_dev
+#   REDIS_URL=redis://localhost:6379
 
-3. Set the database URL in `apps/backend.env`:
-
-```bash
-# Replace with actual database URL, make sure the database exists.
-DATABASE_URL=postgres://postgres:@localhost:5432/medusa-dtc-starter
-```
-
-4. Run migrations:
-
-```bash
+# 5. Run migrations and create an admin user
 cd apps/backend
-pnpm medusa db:migrate
+npx medusa db:migrate
+npx medusa user -e you@example.com -p <a-real-password>
+cd ../..
+
+# 6. Configure the storefront
+cp apps/storefront/.env.template apps/storefront/.env.local 2>/dev/null || true
+# NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY - get it from Medusa Admin (Settings >
+# Publishable API keys) once the backend is running, or query the
+# `api_key` table directly in dev.
+
+# 7. Run everything
+npm run dev   # backend on :9000 (admin dashboard at /app), storefront on :8000
 ```
 
-5. Add admin user:
+**Current local admin login:** `admin@dropship.local` / `DevAdmin123!` — dev-only, rotate before any real deployment.
 
-```bash
-cd apps/backend
-pnpm medusa user -e admin@test.com -p supersecret
-```
+## Stripe payments
 
-6. Start Medusa backend:
+`apps/backend/medusa-config.ts` only registers the Stripe payment provider **when `STRIPE_API_KEY` is set** — until then, the backend runs on Medusa's built-in manual/test payment provider, so the full cart → checkout → order flow is testable without a Stripe account. Once you have real Stripe keys (a Phase 0 step in `docs/roadmap.md`):
 
-```bash
-cd apps/backend
-pnpm dev
-```
+1. Set `STRIPE_API_KEY` and `STRIPE_WEBHOOK_SECRET` in `apps/backend/.env`.
+2. Set `NEXT_PUBLIC_STRIPE_KEY` (the **publishable** key, `pk_...`) in `apps/storefront/.env.local`.
+3. Restart the backend, then enable Stripe as a payment provider for the relevant region in Medusa Admin (Settings → Regions → Payment providers).
 
-7. Open the admin dashboard at `localhost:9000/app` and log in. Retrieve your publishable API key at Settings > Publishable API key.
-
-8. Set up environment variables for the storefront:
-
-```bash
-cp apps/storefront/.env.template apps/storefront/.env.local
-```
-
-9. Update `apps/storefront/.env.local` with your Medusa publishable API key:
-
-```bash
-NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_6c3...
-```
-
-10.  Start storefront:
-
-```bash
-cd apps/storefront
-pnpm dev
-```
-
-The storefront runs on `http://localhost:8000`.
-
-You can slo run the following command from the root to start both backend and storefront:
-
-```bash
-pnpm dev
-```
+No code changes are required to activate it.
 
 ## Configuration
 
@@ -150,7 +128,9 @@ The storefront is configured via environment variables in `apps/storefront/.env.
 | `NEXT_PUBLIC_MEDUSA_BACKEND_URL` | URL of your Medusa backend | `http://localhost:9000` |
 | `NEXT_PUBLIC_DEFAULT_REGION` | Default region country code | `dk` |
 | `NEXT_PUBLIC_BASE_URL` | Base URL of the storefront | `https://localhost:8000` |
-| `NEXT_PUBLIC_STRIPE_KEY` | Stripe publishable key (optional) | — |
+| `NEXT_PUBLIC_STRIPE_KEY` | Stripe publishable key (optional, see above) | — |
+
+The backend is configured via `apps/backend/.env` — see `apps/backend/.env.template` for the full list, including `STRIPE_API_KEY` / `STRIPE_WEBHOOK_SECRET`.
 
 ## Resources
 
