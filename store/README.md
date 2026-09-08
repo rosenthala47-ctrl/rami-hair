@@ -118,6 +118,27 @@ npm run dev   # backend on :9000 (admin dashboard at /app), storefront on :8000
 
 No code changes are required to activate it.
 
+## Deploying the storefront to Cloudflare
+
+The storefront is built for **Cloudflare Workers** via [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare) (chosen over Vercel because Cloudflare's free Workers plan explicitly permits commercial use, with no forced trial-to-paid conversion). This required bumping Next.js from 15.5.21 to 15.5.25 to satisfy the adapter's peer dependency. `apps/storefront/wrangler.jsonc` and `open-next.config.ts` are already configured.
+
+Verified locally against the real Workers runtime (not just `next dev`):
+
+```bash
+cd apps/storefront
+npx opennextjs-cloudflare build     # builds .open-next/worker.js
+npx opennextjs-cloudflare preview   # serves it on workerd at http://localhost:8787
+```
+
+To deploy for real:
+
+1. Create a free Cloudflare account at [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up) — no card required for the Workers Free plan.
+2. Generate an API token: **My Profile → API Tokens → Create Token → "Edit Cloudflare Workers" template**. This is scoped (not your account password) and can be revoked any time from the same page.
+3. `NEXT_PUBLIC_*` values are baked into the JS bundle at **build time**, not read from Workers env at runtime — so `apps/storefront/.env` (or `.env.production`) must already have the real `NEXT_PUBLIC_MEDUSA_BACKEND_URL` / `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` (from the deployed Medusa Cloud backend) *before* running `build`.
+4. One-time cache bucket: `CLOUDFLARE_API_TOKEN=<token> npx wrangler r2 bucket create rami-hair-storefront-opennext-cache`
+5. Deploy: `CLOUDFLARE_API_TOKEN=<token> npx opennextjs-cloudflare deploy`
+6. Custom domain: Cloudflare dashboard → Workers & Pages → the worker → Settings → Domains & Routes → Add Custom Domain (works whether or not the domain is already on Cloudflare; it walks you through DNS if not).
+
 ## Configuration
 
 The storefront is configured via environment variables in `apps/storefront/.env.local`:

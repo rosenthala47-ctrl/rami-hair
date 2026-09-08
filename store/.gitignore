@@ -46,6 +46,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cloudflare / opennextjs
+**/.open-next/
+**/.wrangler/
+**/.dev.vars
+
 # macOS system files
 .DS_Store
 .DS_Store?
